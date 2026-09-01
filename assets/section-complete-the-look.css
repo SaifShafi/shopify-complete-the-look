@@ -28,3 +28,41 @@
 .ctl-skeleton-card__line--price {
   width: 35%;
 }
+
+/* Shimmer is decorative only; it is removed for reduced-motion users
+   while the static placeholders stay in place. */
+@media (prefers-reduced-motion: no-preference) {
+  .ctl-skeleton-card__media,
+  .ctl-skeleton-card__line {
+    background: linear-gradient(
+      100deg,
+      rgba(var(--color-foreground), 0.05) 40%,
+      rgba(var(--color-foreground), 0.1) 50%,
+      rgba(var(--color-foreground), 0.05) 60%
+    );
+    background-size: 200% 100%;
+    animation: ctl-shimmer 1.4s ease-in-out infinite;
+  }
+
+  .complete-the-look--loaded .grid__item {
+    animation: ctl-fade-in 250ms ease-out;
+  }
+}
+
+@keyframes ctl-shimmer {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -80% 0;
+  }
+}
+
+@keyframes ctl-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
