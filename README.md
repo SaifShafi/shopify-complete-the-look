@@ -1,99 +1,50 @@
-# Dawn
+# Complete the Look, a Shopify section built on Dawn
 
-[![Build status](https://github.com/shopify/dawn/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Shopify/dawn/actions/workflows/ci.yml?query=branch%3Amain)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?color=informational)](/.github/CONTRIBUTING.md)
+> **DRAFT. Saif: rewrite this in your own voice before publishing.** Every section below is factually accurate to how the build actually went, but the wording is a starting point, not the final text.
 
-[Getting started](#getting-started) |
-[Staying up to date with Dawn changes](#staying-up-to-date-with-dawn-changes) |
-[Developer tools](#developer-tools) |
-[Contributing](#contributing) |
-[Code of conduct](#code-of-conduct) |
-[Theme Store submission](#theme-store-submission) |
-[License](#license)
+This repo is Shopify's [Dawn](https://github.com/Shopify/dawn) reference theme plus one custom section I built: **Complete the Look**, a product recommendations section for product pages. The interesting part is the diff, not the theme:
 
-Dawn represents a HTML-first, JavaScript-only-as-needed approach to theme development. It's Shopify's first source available theme with performance, flexibility, and [Online Store 2.0 features](https://www.shopify.com/partners/blog/shopify-online-store) built-in and acts as a reference for building Shopify themes.
-
-* **Web-native in its purest form:** Themes run on the [evergreen web](https://www.w3.org/2001/tag/doc/evergreen-web/). We leverage the latest web browsers to their fullest, while maintaining support for the older ones through progressive enhancement—not polyfills.
-* **Lean, fast, and reliable:** Functionality and design defaults to “no” until it meets this requirement. Code ships on quality. Themes must be built with purpose. They shouldn’t support each and every feature in Shopify.
-* **Server-rendered:** HTML must be rendered by Shopify servers using Liquid. Business logic and platform primitives such as translations and money formatting don’t belong on the client. Async and on-demand rendering of parts of the page is OK, but we do it sparingly as a progressive enhancement.
-* **Functional, not pixel-perfect:** The Web doesn’t require each page to be rendered pixel-perfect by each browser engine. Using semantic markup, progressive enhancement, and clever design, we ensure that themes remain functional regardless of the browser.
-
-You can find a more detailed version of our theme code principles in the [contribution guide](https://github.com/Shopify/dawn/blob/main/.github/CONTRIBUTING.md#theme-code-principles).
-
-## Getting started
-We recommend using Dawn as a starting point for theme development. [Learn more on Shopify.dev](https://shopify.dev/themes/getting-started/create).
-
-> If you're building a theme for the Shopify Theme Store, then you can use Dawn as a starting point. However, the theme that you submit needs to be [substantively different from Dawn](https://shopify.dev/themes/store/requirements#uniqueness) so that it provides added value for merchants. Learn about the [ways that you can use Dawn](https://shopify.dev/themes/tools/dawn#ways-to-use-dawn).
-
-Please note that the main branch may include code for features not yet released. The "stable" version of Dawn is available in the theme store.
-
-## Staying up to date with Dawn changes
-
-Say you're building a new theme off Dawn but you still want to be able to pull in the latest changes, you can add a remote `upstream` pointing to this Dawn repository.
-
-1. Navigate to your local theme folder.
-2. Verify the list of remotes and validate that you have both an `origin` and `upstream`:
-```sh
-git remote -v
 ```
-3. If you don't see an `upstream`, you can add one that points to Shopify's Dawn repository:
-```sh
-git remote add upstream https://github.com/Shopify/dawn.git
-```
-4. Pull in the latest Dawn changes into your repository:
-```sh
-git fetch upstream
-git pull upstream main
+git diff 258f00f6..HEAD
 ```
 
-## Developer tools
+Three files: `sections/complete-the-look.liquid`, `assets/complete-the-look.js`, `assets/section-complete-the-look.css`.
 
-There are a number of really useful tools that the Shopify Themes team uses during development. Dawn is already set up to work with these tools.
+## What it does
 
-### Shopify CLI
+- Shows "goes well with this product" recommendations on product pages, driven by Shopify's native Product Recommendations API with the `intent=complementary` parameter. A merchant setting switches it to `related` intent.
+- Merchant settings for heading, product count (2 to 8), image ratio, vendor and hover-image toggles, colour scheme and padding, in Dawn's own schema style. The section can only be added to product templates (`enabled_on`).
 
-[Shopify CLI](https://github.com/Shopify/shopify-cli) helps you build Shopify themes faster and is used to automate and enhance your local development workflow. It comes bundled with a suite of commands for developing Shopify themes—everything from working with themes on a Shopify store (e.g. creating, publishing, deleting themes) or launching a development server for local theme development.
+## The engineering choices
 
-You can follow this [quick start guide for theme developers](https://shopify.dev/docs/themes/tools/cli) to get started.
+**Server-rendered cards, not JSON templating.** The JS fetches the recommendations URL with a `section_id`, which makes Shopify re-render this same Liquid section with the `recommendations` object populated, then swaps the HTML in. Liquid stays the single source of card markup and the section reuses Dawn's `card-product` snippet, so cards here look identical to cards everywhere else in the theme. The alternative, fetching `/recommendations/products.json` and building DOM in JS, duplicates the card markup in a second language and drifts out of sync with the theme.
 
-### Theme Check
+**No layout shift.** On first render the section shows skeleton placeholder cards that occupy exactly the same grid cells as the real cards, sized by the same image-ratio setting. When the data arrives the cards replace the skeletons in place. If the API returns nothing, the whole section (wrapper and padding included) removes itself rather than leaving an empty band.
 
-We recommend using [Theme Check](https://github.com/shopify/theme-check) as a way to validate and lint your Shopify themes.
+**Deferred loading.** An IntersectionObserver with a 400px root margin holds the fetch until the shopper scrolls near the section, so it costs nothing on page load.
 
-We've added Theme Check to Dawn's [list of VS Code extensions](/.vscode/extensions.json) so if you're using Visual Studio Code as your code editor of choice, you'll be prompted to install the [Theme Check VS Code](https://marketplace.visualstudio.com/items?itemName=Shopify.theme-check-vscode) extension upon opening VS Code after you've forked and cloned Dawn.
+**Reduced motion respected.** The skeleton shimmer and the loaded fade-in only run under `prefers-reduced-motion: no-preference`.
 
-You can also run it from a terminal with the following Shopify CLI command:
+## Running it
 
-```bash
-shopify theme check
-```
+1. `npm install -g @shopify/cli` (Node 22+; on Node 18 pin `@shopify/cli@3.68`)
+2. `shopify theme dev --store your-dev-store` from the repo root
+3. Add the "Complete the look" section to a product template in the theme editor. Complementary intent needs the Shopify Search & Discovery app configured with complementary products; without it, switch the setting to related intent.
 
-### Continuous Integration
+`shopify theme check` passes: zero offenses in the three files this repo adds (Dawn 16.0.0 itself ships 15 pre-existing warnings, untouched here).
 
-Dawn uses [GitHub Actions](https://github.com/features/actions) to maintain the quality of the theme. [This is a starting point](https://github.com/Shopify/dawn/blob/main/.github/workflows/ci.yml) and what we suggest to use in order to ensure you're building better themes. Feel free to build off of it!
+## How I actually used AI on this
 
-#### Shopify/lighthouse-ci-action
+This is the first Liquid I have written. The build took under a day, working with Claude Code, and the commit history is the honest record: every commit carries a Claude co-author trailer because Claude Code wrote the first version of most lines, under direction and review.
 
-We love fast websites! Which is why we created [Shopify/lighthouse-ci-action](https://github.com/Shopify/lighthouse-ci-action). This runs a series of [Google Lighthouse](https://developers.google.com/web/tools/lighthouse) audits for the home, product and collections pages on a store to ensure code that gets added doesn't degrade storefront performance over time.
+What that looked like in practice:
 
-#### Shopify/theme-check-action
+- **The design decisions were made by reading Dawn's source first, not by generating code first.** My starting plan was the obvious one, fetch the JSON recommendations endpoint and template cards in JS. Reading `sections/related-products.liquid` and the `ProductRecommendations` element in `assets/global.js` showed Dawn's own pattern, section rendering with server-side Liquid, which is clearly better for markup consistency. The plan changed before the first line was written.
+- **The tooling fought back and got fixed, not worked around.** `shopify theme check` would not run at first: the latest Shopify CLI requires Node 22 and this machine runs Node 18, failing with an unhelpful `enableCompileCache` import error. Pinning `@shopify/cli@3.68.0`, the last major version supporting Node 18, got a real lint pass instead of a skipped one.
+- **Everything got verified against the theme, not assumed.** The `accessibility.loading` translation key, the `grid--N-col-desktop` classes and the `enabled_on` schema key were each confirmed to exist in Dawn 16 before being used; `intent=complementary` was confirmed as the same parameter Dawn's own complementary-products block passes in `main-product.liquid`.
 
-Dawn runs [Theme Check](#Theme-Check) on every commit via [Shopify/theme-check-action](https://github.com/Shopify/theme-check-action).
-
-## Contributing
-
-Want to make commerce better for everyone by contributing to Dawn? We'd love your help! Please read our [contributing guide](https://github.com/Shopify/dawn/blob/main/.github/CONTRIBUTING.md) to learn about our development process, how to propose bug fixes and improvements, and how to build for Dawn.
-
-## Code of conduct
-
-All developers who wish to contribute through code or issues, please first read our [Code of Conduct](https://github.com/Shopify/dawn/blob/main/.github/CODE_OF_CONDUCT.md).
-
-## Theme Store submission
-
-The [Shopify Theme Store](https://themes.shopify.com/) is the place where Shopify merchants find the themes that they'll use to showcase and support their business. As a theme partner, you can create themes for the Shopify Theme Store and reach an international audience of an ever-growing number of entrepreneurs.
-
-Ensure that you follow the list of [theme store requirements](https://shopify.dev/themes/store/requirements) if you're interested in becoming a [Shopify Theme Partner](https://themes.shopify.com/services/themes/guidelines) and building themes for the Shopify platform.
+The point of this repo, for the people I built it for: I had not touched Shopify before this. With Claude Code in the loop and the discipline to read the platform's reference code before trusting generated output, a day was enough to ship a section that follows the theme's conventions and passes its linter.
 
 ## License
 
-Copyright (c) 2021-present Shopify Inc. See [LICENSE](/LICENSE.md) for further details.
+Dawn is MIT licensed by Shopify (see LICENSE.md). The added section carries the same license.
