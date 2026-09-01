@@ -114,9 +114,9 @@
     },
     "complete_the_look_XDhFRU": {
       "type": "complete-the-look",
-      "name": "Complete the look",
+      "name": "Complete The Look",
       "settings": {
-        "heading": "Complete the look",
+        "heading": "Complete The Look",
         "heading_size": "h1",
         "intent": "related",
         "products_to_show": 4,
