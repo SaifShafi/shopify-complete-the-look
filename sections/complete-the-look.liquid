@@ -1,0 +1,225 @@
+{{ 'component-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
+{{ 'section-complete-the-look.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- liquid
+  assign columns_desktop = section.settings.products_to_show
+  if columns_desktop > 4
+    assign columns_desktop = 4
+  endif
+  case section.settings.image_ratio
+    when 'portrait'
+      assign skeleton_media_ratio = 125.0
+    else
+      assign skeleton_media_ratio = 100.0
+  endcase
+-%}
+
+<div class="complete-the-look-wrapper color-{{ section.settings.color_scheme }} gradient">
+  <complete-the-look
+    class="complete-the-look page-width section-{{ section.id }}-padding isolate"
+    data-url="{{ routes.product_recommendations_url }}?limit={{ section.settings.products_to_show }}&intent={{ section.settings.intent }}"
+    data-section-id="{{ section.id }}"
+    data-product-id="{{ product.id }}"
+    {% unless recommendations.performed %}
+      aria-busy="true"
+    {% endunless %}
+  >
+    {%- if recommendations.performed -%}
+      {%- if recommendations.products_count > 0 -%}
+        <h2 class="complete-the-look__heading inline-richtext {{ section.settings.heading_size }}">
+          {{ section.settings.heading }}
+        </h2>
+        <ul
+          class="grid product-grid grid--{{ columns_desktop }}-col-desktop grid--2-col-tablet-down"
+          role="list"
+        >
+          {% assign skip_card_product_styles = false %}
+          {% for recommendation in recommendations.products %}
+            <li class="grid__item">
+              {% render 'card-product',
+                card_product: recommendation,
+                media_aspect_ratio: section.settings.image_ratio,
+                show_secondary_image: section.settings.show_secondary_image,
+                show_vendor: section.settings.show_vendor,
+                skip_styles: skip_card_product_styles,
+                product_view_context: 'recommendation'
+              %}
+            </li>
+            {%- assign skip_card_product_styles = true -%}
+          {% endfor %}
+        </ul>
+      {%- endif -%}
+    {%- else -%}
+      <h2 class="complete-the-look__heading inline-richtext {{ section.settings.heading_size }}">
+        {{ section.settings.heading }}
+      </h2>
+      <span class="visually-hidden">{{ 'accessibility.loading' | t }}</span>
+      <ul
+        class="grid product-grid grid--{{ columns_desktop }}-col-desktop grid--2-col-tablet-down complete-the-look__skeleton"
+        role="list"
+        aria-hidden="true"
+      >
+        {%- for i in (1..section.settings.products_to_show) -%}
+          <li class="grid__item">
+            <div class="ctl-skeleton-card">
+              <div class="ctl-skeleton-card__media" style="padding-bottom: {{ skeleton_media_ratio }}%;"></div>
+              <div class="ctl-skeleton-card__line ctl-skeleton-card__line--title"></div>
+              <div class="ctl-skeleton-card__line ctl-skeleton-card__line--price"></div>
+            </div>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+  </complete-the-look>
+</div>
+
+{% schema %}
+{
+  "name": "Complete the look",
+  "tag": "section",
+  "class": "section",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Recommendations come from Shopify's Product Recommendations API and load as the shopper scrolls near the section. The section hides itself when the API returns no products."
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "default": "Complete the look",
+      "label": "Heading"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "Small"
+        },
+        {
+          "value": "h1",
+          "label": "Medium"
+        },
+        {
+          "value": "h0",
+          "label": "Large"
+        }
+      ],
+      "default": "h1",
+      "label": "Heading size"
+    },
+    {
+      "type": "select",
+      "id": "intent",
+      "options": [
+        {
+          "value": "complementary",
+          "label": "Complementary (goes well with this product)"
+        },
+        {
+          "value": "related",
+          "label": "Related (similar to this product)"
+        }
+      ],
+      "default": "complementary",
+      "label": "Recommendation intent",
+      "info": "Complementary intent requires the Shopify Search & Discovery app to be configured."
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4,
+      "label": "Maximum products to show"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "Adapt to image"
+        },
+        {
+          "value": "portrait",
+          "label": "Portrait"
+        },
+        {
+          "value": "square",
+          "label": "Square"
+        }
+      ],
+      "default": "square",
+      "label": "Image ratio"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary_image",
+      "default": false,
+      "label": "Show second image on hover"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "default": false,
+      "label": "Show vendor"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "Complete the look"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,30 @@
+.complete-the-look {
+  display: block;
+}
+
+.complete-the-look__heading {
+  margin: 0 0 3rem;
+}
+
+/* Skeleton cards reserve the exact grid footprint of the loaded product cards,
+   so the swap from placeholder to content causes no layout shift. */
+.ctl-skeleton-card__media {
+  width: 100%;
+  border-radius: var(--media-radius, 0);
+  background: rgba(var(--color-foreground), 0.06);
+}
+
+.ctl-skeleton-card__line {
+  height: 1.2rem;
+  margin-top: 1.2rem;
+  border-radius: 0.2rem;
+  background: rgba(var(--color-foreground), 0.06);
+}
+
+.ctl-skeleton-card__line--title {
+  width: 70%;
+}
+
+.ctl-skeleton-card__line--price {
+  width: 35%;
+}
