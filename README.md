@@ -10,6 +10,12 @@ git diff 258f00f6..HEAD
 
 Three files: `sections/complete-the-look.liquid`, `assets/complete-the-look.js`, `assets/section-complete-the-look.css`.
 
+## Live demo
+
+The section is running on a Shopify development store: **https://saif-dev-store-sxxnnjef.myshopify.com** (storefront password: `haslo`; development stores cannot remove the password wall). Open any product from the Catalog and scroll down.
+
+![Complete The Look on a product page](docs/demo-product-page.png)
+
 ## What it does
 
 - Shows "goes well with this product" recommendations on product pages, driven by Shopify's native Product Recommendations API with the `intent=complementary` parameter. A merchant setting switches it to `related` intent.
@@ -29,7 +35,7 @@ Three files: `sections/complete-the-look.liquid`, `assets/complete-the-look.js`,
 
 1. `npm install -g @shopify/cli` (Node 22+; on Node 18 pin `@shopify/cli@3.68`)
 2. `shopify theme dev --store your-dev-store` from the repo root
-3. Add the "Complete the look" section to a product template in the theme editor. Complementary intent needs the Shopify Search & Discovery app configured with complementary products; without it, switch the setting to related intent.
+3. Add the "Complete The Look" section to a product template in the theme editor. Complementary intent needs the Shopify Search & Discovery app configured with complementary products; without it, switch the setting to related intent.
 
 `shopify theme check` passes: zero offenses in the three files this repo adds (Dawn 16.0.0 itself ships 15 pre-existing warnings, untouched here).
 
