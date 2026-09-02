@@ -1,12 +1,6 @@
 # Complete the Look, a Shopify section built on Dawn
 
-> **DRAFT. Saif: rewrite this in your own voice before publishing.** Every section below is factually accurate to how the build actually went, but the wording is a starting point, not the final text.
-
 This repo is Shopify's [Dawn](https://github.com/Shopify/dawn) reference theme plus one custom section I built: **Complete the Look**, a product recommendations section for product pages. The interesting part is the diff, not the theme:
-
-```
-git diff 258f00f6..HEAD
-```
 
 Three files: `sections/complete-the-look.liquid`, `assets/complete-the-look.js`, `assets/section-complete-the-look.css`.
 
@@ -41,7 +35,7 @@ The section is running on a Shopify development store: **https://saif-dev-store-
 
 ## How I actually used AI on this
 
-This is the first Liquid I have written. The build took under a day, working with Claude Code, and the commit history is the honest record: every commit carries a Claude co-author trailer because Claude Code wrote the first version of most lines, under direction and review.
+This is the first Liquid I have written. The build took under a day, working with Claude Code, I brainstormed the plan using a brainstorming skill, fine-tuned it, then implemented it with claude, and the commit history is the honest record: every commit carries a Claude co-author trailer because Claude Code wrote the first version of most lines, under direction and review.
 
 What that looked like in practice:
 
